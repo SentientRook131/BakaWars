@@ -4,3 +4,12 @@ main: com.nanhuboat.bakaWars
 api-version: '1.21'
 authors: [ SentientRook131 ]
 description: MCheater
+commands:
+  bw:
+    description: BakaWars main command
+    usage: /bw <subcommand>
+    permission: bakaWars.bw
+  mw:
+    description: BakaWars' Multi Worlds
+    usage: /mw <subcommand>
+    permission: bakaWars.mw

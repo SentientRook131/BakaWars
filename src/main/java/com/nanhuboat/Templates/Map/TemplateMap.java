@@ -8,7 +8,6 @@ import com.nanhuboat.Templates.Team.TemplateTeam;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class TemplateMap implements Preservable {
     public String name;

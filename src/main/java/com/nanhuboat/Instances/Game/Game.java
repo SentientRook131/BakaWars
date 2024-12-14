@@ -3,17 +3,18 @@ package com.nanhuboat.Instances.Game;
 import com.nanhuboat.Instances.ResourcesSpawn.ResourcesSpawnPoint;
 import com.nanhuboat.Instances.Team.RecordedPlayer;
 import com.nanhuboat.Instances.Team.Team;
+import com.nanhuboat.Templates.Map.TemplateMap;
 import com.nanhuboat.bakaWars;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
@@ -21,6 +22,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class Game implements Listener {
+    public TemplateMap templateMap;
+    public String fileMapName;
+    public World world;
     public List<Team> teams;
     public List<ResourcesSpawnPoint> resourcesSpawnPoints;
     public Map<Player, RecordedPlayer> players;
@@ -31,7 +35,8 @@ public class Game implements Listener {
     public boolean isPreparing;
     public boolean isStarting;
     public int residualTime;
-    public Game(List<Team> teams, int leastPlayerAmount, Location prepareLoc, Location centerLoc, List<ResourcesSpawnPoint> points) {
+    public Game(TemplateMap templateMap, List<Team> teams, int leastPlayerAmount, Location prepareLoc, Location centerLoc, List<ResourcesSpawnPoint> points) {
+        this.templateMap = templateMap;
         this.teams = teams;
         this.players = new HashMap<>();
         this.resourcesSpawnPoints = points;
@@ -40,6 +45,9 @@ public class Game implements Listener {
         this.leastPlayerAmount = leastPlayerAmount;
         this.isPreparing = false;
         this.isStarting = false;
+        this.fileMapName = bakaWars.generateRandomString(4, 16, true, true, true, false);
+        WorldCloner.cloneWorld(templateMap.name, fileMapName);
+        this.world = Bukkit.createWorld(new WorldCreator(fileMapName));
         for (Team team : teams) maxPlayerAmount += team.maxPlayerAmount;
         prepare();
     }
@@ -95,6 +103,19 @@ public class Game implements Listener {
         distributePlayersToTeams();
         for (Team team : teams) team.start();
         for (ResourcesSpawnPoint point : resourcesSpawnPoints) point.init();
+        for (Player player : players.keySet()) {
+            OpenInterfaceToChooseTeamListener listener = new OpenInterfaceToChooseTeamListener(player.getInventory(), this);
+            listener.inventory.setItem(0, new ItemStack(players.get(player).team.symbolBed));
+        }
+    }
+    public void stop() {
+        this.isPreparing = false;
+        this.isStarting = false;
+        for (Player player : players.keySet()) {
+            player.setGameMode(GameMode.SURVIVAL);
+            player.teleport(bakaWars.lobby);
+            Bukkit.unloadWorld(this.fileMapName, false);
+        }
     }
     public void playerDie(Player player) {
         player.setHealth(20);
@@ -109,6 +130,25 @@ public class Game implements Listener {
             player.sendTitle("你还剩" + respawnTime.get() + "s复活！", "", 10, 20, 10);
             respawnTime.getAndDecrement();
         }, 0, 20);
+    }
+    public void playerJoinTheTeam(Player player, Team team) {
+        players.get(player).team.removePlayer(player);
+        players.get(player).team = team;
+        team.addPlayer(player);
+        PlayerInventory inventory = player.getInventory();
+        ItemStack stack1 = new ItemStack(Material.LEATHER_LEGGINGS), stack2 = new ItemStack(Material.LEATHER_BOOTS);
+        LeatherArmorMeta meta1 = (LeatherArmorMeta) stack1.getItemMeta(), meta2 = (LeatherArmorMeta) stack2.getItemMeta();
+        meta1.setColor(team.color);
+        meta2.setColor(team.color);
+        stack1.setItemMeta(meta1);
+        stack2.setItemMeta(meta2);
+        inventory.setLeggings(stack1);
+        inventory.setBoots(stack2);
+    }
+    public void leave(Player player) {
+        players.get(player).team.removePlayer(player);
+        player.getInventory().clear();
+        players.remove(player);
     }
     @EventHandler
     public void onPlayerEnterWorld(PlayerChangedWorldEvent e) {

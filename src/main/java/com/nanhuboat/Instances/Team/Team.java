@@ -14,16 +14,20 @@ import java.util.List;
 public class Team extends TemplateTeam {
     public Location bedLocation;
     public Location respawnLocation;
+    public Material symbolBed;
+    public Material symbolWool;
     public List<ResourcesSpawnPoint> points;
     public List<Shop> shop;
     public List<ShopVillager> villagers;
     public List<Player> players;
-    public Team(String name, Location bedLocation, Location respawnLocation, List<ResourcesSpawnPoint> points, List<Shop> shop) {
+    public Team(String name, Location bedLocation, Location respawnLocation, Material symbolBed, Material symbolWool, List<ResourcesSpawnPoint> points, List<Shop> shop) {
         super();
         this.teamDisplayName = name;
         this.teamName = name;
         this.bedLocation = bedLocation;
         this.respawnLocation = respawnLocation;
+        this.symbolBed = symbolBed;
+        this.symbolWool = symbolWool;
         this.points = points;
         this.shop = shop;
         this.players = new ArrayList<>();

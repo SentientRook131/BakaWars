@@ -2,15 +2,15 @@ package com.nanhuboat.Templates.Team;
 
 import com.google.gson.JsonObject;
 import com.nanhuboat.Templates.Preservable;
-import org.bukkit.ChatColor;
+import org.bukkit.Color;
 
 public class TemplateTeam implements Preservable {
     public int maxPlayerAmount = 4;
     public String teamDisplayName = "南湖船";
     public String teamName = "NanHuBoat";
-    public ChatColor color = ChatColor.RED;
+    public Color color = Color.RED;
     public TemplateTeam() { }
-    public TemplateTeam(String teamDisplayName, String teamName, ChatColor color, int maxPlayerAmount) {
+    public TemplateTeam(String teamDisplayName, String teamName, Color color, int maxPlayerAmount) {
         this.teamDisplayName = teamDisplayName;
         this.teamName = teamName;
         this.color = color;
@@ -22,7 +22,7 @@ public class TemplateTeam implements Preservable {
         TemplateTeam obj = new TemplateTeam();
         teamDisplayName = obj.teamDisplayName = map.get("teamDisplayName").getAsString();
         teamName = obj.teamName = map.get("teamName").getAsString();
-        color = obj.color = ChatColor.valueOf(map.get("color").getAsString());
+        color = obj.color = Color.fromRGB(map.get("color").getAsInt());
         maxPlayerAmount = obj.maxPlayerAmount = map.get("maxPlayerAmount").getAsInt();
         return obj;
     }
@@ -32,7 +32,7 @@ public class TemplateTeam implements Preservable {
         JsonObject map = new JsonObject();
         map.addProperty("teamDisplayName", teamDisplayName);
         map.addProperty("teamName", teamName);
-        map.addProperty("color", color.name());
+        map.addProperty("color", color.asRGB());
         map.addProperty("maxPlayerAmount", maxPlayerAmount);
         return map;
     }
